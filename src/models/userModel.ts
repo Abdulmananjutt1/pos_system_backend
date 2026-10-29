@@ -3,19 +3,35 @@ import { Prisma, User } from "@prisma/client";
 
 export const UserModel = {
   findByEmail: (email: string) =>
-    prisma.user.findFirst({ where: { email, isActive: true } }),
+    prisma.user.findFirst({ where: { email } }),
 
   findById: (id: string) =>
-    prisma.user.findFirst({ where: { id, isActive: true } }),
+    prisma.user.findUnique({ where: { id } }),
 
   create: (data: Prisma.UserCreateInput) =>
     prisma.user.create({ data }),
 
   findAll: () =>
     prisma.user.findMany({
-      where:   { isActive: true },
-      select:  { id: true, name: true, email: true, role: true, createdAt: true },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true, name: true, email: true,
+        role: true, isActive: true,
+        permissions: true, createdAt: true,
+      },
+    }),
+
+  update: (id: string, data: Prisma.UserUpdateInput) =>
+    prisma.user.update({ where: { id }, data }),
+
+  updatePermissions: (id: string, permissions: string[]) =>
+    prisma.user.update({
+      where: { id },
+      data:  { permissions },
+      select: {
+        id: true, name: true, email: true,
+        role: true, isActive: true, permissions: true,
+      },
     }),
 
   deactivate: (id: string) =>

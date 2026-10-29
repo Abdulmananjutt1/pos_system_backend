@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { reportController } from "../controllers/reportController";
-import { authenticate } from "../middleware/auth";
+import { authenticate, authorize } from "../middleware/auth";
 
 const router = Router();
 router.use(authenticate);
 
-router.get("/summary", reportController.getSummary);
+router.get("/summary", authorize("admin"), reportController.getSummary);
 
 export default router;
