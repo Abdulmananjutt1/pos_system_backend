@@ -20,6 +20,9 @@ router.post(
 // GET /api/auth/me  (protected)
 router.get("/me", authenticate, authController.me);
 
+// POST /api/auth/refresh  (protected — issue new token)
+router.post("/refresh", authenticate, authController.refresh);
+
 // POST /api/auth/register  (admin only)
 router.post(
   "/register",

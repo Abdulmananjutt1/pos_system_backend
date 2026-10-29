@@ -38,6 +38,26 @@ export const authController = {
     res.json({ success: true, data: safe } satisfies ApiResponse);
   },
 
+  // Refresh token — issue a new token if current one is still valid
+  async refresh(req: Request, res: Response): Promise<void> {
+    const user = await UserModel.findById(req.user!.id);
+    if (!user || !user.isActive) throw new AppError("User not found or inactive", 401);
+
+    const payload: JwtPayload = { id: user.id, email: user.email, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: (process.env.JWT_EXPIRES_IN ?? "7d") as string,
+    });
+
+    res.json({
+      success: true,
+      message: "Token refreshed",
+      data: {
+        token,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      },
+    } satisfies ApiResponse);
+  },
+
   async register(req: Request, res: Response): Promise<void> {
     const { name, email, password, role } = req.body as {
       name: string; email: string; password: string; role: "admin" | "cashier";
