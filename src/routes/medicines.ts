@@ -13,10 +13,10 @@ router.get("/expiring",    medicineController.getExpiring);
 router.get("/:id",         medicineController.getOne);
 
 const medicineBody = [
-  body("name").notEmpty().withMessage("Name required"),
-  body("selling_price").isFloat({ min: 0 }).withMessage("Valid selling price required"),
-  body("stock").isInt({ min: 0 }).withMessage("Valid stock required"),
-  body("expiry_date").isISO8601().withMessage("Valid expiry date required"),
+  body("name").notEmpty().withMessage("Medicine name is required"),
+  body("sellingPrice").isFloat({ min: 0 }).withMessage("Selling price must be a valid number"),
+  body("stock").isInt({ min: 0 }).withMessage("Stock must be a valid number"),
+  body("expiryDate").isISO8601().withMessage("Expiry date must be a valid date"),
 ];
 
 router.post(   "/",                authorize("admin"), medicineBody, validate, medicineController.create);

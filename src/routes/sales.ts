@@ -15,7 +15,7 @@ router.post(
   "/",
   [
     body("items").isArray({ min: 1 }).withMessage("At least one item required"),
-    body("payment_method").notEmpty().withMessage("Payment method required"),
+    body("paymentMethod").notEmpty().withMessage("Payment method required"),
     body("total").isFloat({ min: 0 }).withMessage("Valid total required"),
   ],
   validate,

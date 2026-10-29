@@ -5,13 +5,19 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
-import authRoutes     from "./routes/auth";
-import medicineRoutes from "./routes/medicines";
-import customerRoutes from "./routes/customers";
-import supplierRoutes from "./routes/suppliers";
-import saleRoutes     from "./routes/sales";
-import expenseRoutes  from "./routes/expenses";
-import settingsRoutes from "./routes/settings";
+import authRoutes          from "./routes/auth";
+import medicineRoutes      from "./routes/medicines";
+import customerRoutes      from "./routes/customers";
+import supplierRoutes      from "./routes/suppliers";
+import saleRoutes          from "./routes/sales";
+import expenseRoutes       from "./routes/expenses";
+import settingsRoutes      from "./routes/settings";
+import purchaseOrderRoutes from "./routes/purchaseOrders";
+import stockTransferRoutes from "./routes/stockTransfers";
+import returnRoutes        from "./routes/returns";
+import reportRoutes        from "./routes/reports";
+import dashboardRoutes     from "./routes/dashboard";
+import cashShiftRoutes     from "./routes/cashShifts";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -34,13 +40,19 @@ app.use(
 );
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use("/api/auth",      authRoutes);
-app.use("/api/medicines", medicineRoutes);
-app.use("/api/customers", customerRoutes);
-app.use("/api/suppliers", supplierRoutes);
-app.use("/api/sales",     saleRoutes);
-app.use("/api/expenses",  expenseRoutes);
-app.use("/api/settings",  settingsRoutes);
+app.use("/api/auth",            authRoutes);
+app.use("/api/medicines",       medicineRoutes);
+app.use("/api/customers",       customerRoutes);
+app.use("/api/suppliers",       supplierRoutes);
+app.use("/api/sales",           saleRoutes);
+app.use("/api/expenses",        expenseRoutes);
+app.use("/api/settings",        settingsRoutes);
+app.use("/api/purchase-orders", purchaseOrderRoutes);
+app.use("/api/transfers",       stockTransferRoutes);
+app.use("/api/returns",         returnRoutes);
+app.use("/api/reports",         reportRoutes);
+app.use("/api/dashboard",       dashboardRoutes);
+app.use("/api/cash-shifts",     cashShiftRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => {
