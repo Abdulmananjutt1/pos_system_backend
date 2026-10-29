@@ -58,6 +58,8 @@ model User {
   passwordHash String   @map("password_hash")
   role         Role     @default(cashier)
   isActive     Boolean  @default(true) @map("is_active")
+  // JSON array of granted permissions e.g. ["medicines.read","reports.view"]
+  permissions  String[] @default([])
   createdAt    DateTime @default(now()) @map("created_at")
 
   sales Sale[]
