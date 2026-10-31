@@ -7,7 +7,7 @@ export const notificationController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const query: PaginationQuery & { unreadOnly?: boolean } = {
       page:       Number(req.query.page)  || 1,
-      limit:      Number(req.query.limit) || 20,
+      limit:      Number(req.query.limit) || 10,
       unreadOnly: req.query.unread === "true",
     };
     const result = await NotificationModel.findAll({ ...query, userId: req.user!.id });

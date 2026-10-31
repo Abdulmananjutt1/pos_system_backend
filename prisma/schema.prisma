@@ -87,6 +87,21 @@ enum NotificationType {
   System
 }
 
+enum TransferType {
+  Internal
+  ExternalOut
+  ExternalIn
+}
+
+enum TransferStatus {
+  Pending
+  InTransit
+  Received
+  Returned
+  PaidCash
+  Rejected
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -131,6 +146,7 @@ model Medicine {
   stockCountItems    StockCountItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        SaleReturnItem[]
+  stockTransferItems StockTransferItem[]
 
   @@index([name])
   @@index([category])
@@ -392,4 +408,50 @@ model AppSettings {
   allowHoldSale      Boolean         @default(true) @map("allow_hold_sale")
 
   @@map("app_settings")
+}
+
+model StockTransfer {
+  id               String         @id @default(uuid())
+  transferNumber   String         @unique @map("transfer_number")
+  transferType     TransferType   @default(Internal) @map("transfer_type")
+  fromBranch       String         @map("from_branch")
+  toBranch         String         @map("to_branch")
+  externalPharmacy String?        @map("external_pharmacy")
+  externalPhone    String?        @map("external_phone")
+  contactPerson    String?        @map("contact_person")
+  settlementType   String?        @default("StockReturn") @map("settlement_type")
+  settledAmount    Decimal?       @db.Decimal(10, 2) @map("settled_amount")
+  transferDate     DateTime       @default(now()) @map("transfer_date")
+  receiveDate      DateTime?      @map("receive_date")
+  settledDate      DateTime?      @map("settled_date")
+  status           TransferStatus @default(Pending)
+  notes            String?
+  initiatedBy      String         @default("Admin") @map("initiated_by")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  items StockTransferItem[]
+
+  @@index([transferType])
+  @@index([status])
+  @@index([transferDate])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id           String        @id @default(uuid())
+  transferId   String        @map("transfer_id")
+  transfer     StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  medicineId   String?       @map("medicine_id")
+  medicine     Medicine?     @relation(fields: [medicineId], references: [id], onDelete: SetNull)
+  medicineName String        @map("medicine_name")
+  quantity     Int           @default(1)
+  unitPrice    Decimal       @default(0) @db.Decimal(10, 2) @map("unit_price")
+  total        Decimal       @default(0) @db.Decimal(10, 2)
+  batchNumber  String?       @map("batch_number")
+  expiryDate   DateTime?     @map("expiry_date")
+
+  @@index([transferId])
+  @@index([medicineId])
+  @@map("stock_transfer_items")
 }

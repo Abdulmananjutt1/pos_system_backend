@@ -3,7 +3,12 @@ import { Prisma, User } from "@prisma/client";
 
 export const UserModel = {
   findByEmail: (email: string) =>
-    prisma.user.findFirst({ where: { email, isActive: true } }),
+    prisma.user.findFirst({
+      where: {
+        email: { equals: email.trim().toLowerCase(), mode: "insensitive" },
+        isActive: true,
+      },
+    }),
 
   findById: (id: string) =>
     prisma.user.findFirst({ where: { id, isActive: true } }),

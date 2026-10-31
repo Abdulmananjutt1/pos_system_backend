@@ -1,0 +1,105 @@
+[
+  {
+    "id": "TRF-001",
+    "transferNumber": "TRF-2601-001",
+    "transferType": "ExternalIn",
+    "fromBranch": "Al-Madina Medicos (Commercial Mkt)",
+    "toBranch": "Main Pharmacy",
+    "externalPharmacy": "Al-Madina Medicos",
+    "externalPhone": "0301-5544332",
+    "contactPerson": "Kashif (Runner)",
+    "settlementType": "StockReturn",
+    "status": "Pending",
+    "notes": "Urgent customer prescription — borrowed 2 packs Panadol CF",
+    "initiatedBy": "Cashier",
+    "transferDate": "2026-10-31",
+    "createdAt": "2026-10-31T08:31:18.836Z",
+    "items": [
+      {
+        "id": "item-1",
+        "medicineId": "PANADOL-CF",
+        "medicineName": "Panadol CF Tablets",
+        "quantity": 2,
+        "unitPrice": 180,
+        "total": 360
+      }
+    ]
+  },
+  {
+    "id": "TRF-002",
+    "transferNumber": "TRF-2601-002",
+    "transferType": "ExternalOut",
+    "fromBranch": "Main Pharmacy",
+    "toBranch": "Bismillah Chemist (G-9 Markaz)",
+    "externalPharmacy": "Bismillah Chemist",
+    "externalPhone": "0333-9876543",
+    "contactPerson": "Tariq Bhai",
+    "settlementType": "StockReturn",
+    "status": "Pending",
+    "notes": "Bismillah Chemist runner came to borrow Augmentin 625mg for an admitted clinic patient",
+    "initiatedBy": "Admin",
+    "transferDate": "2026-10-30",
+    "createdAt": "2026-10-30T11:31:18.836Z",
+    "items": [
+      {
+        "id": "item-2",
+        "medicineId": "AUG-625",
+        "medicineName": "Augmentin 625mg",
+        "quantity": 3,
+        "unitPrice": 420,
+        "total": 1260
+      }
+    ]
+  },
+  {
+    "id": "TRF-003",
+    "transferNumber": "TRF-2601-003",
+    "transferType": "ExternalIn",
+    "fromBranch": "Bilal Pharmacy (Saddar)",
+    "toBranch": "Main Pharmacy",
+    "externalPharmacy": "Bilal Pharmacy",
+    "externalPhone": "0321-4455667",
+    "contactPerson": "Hamza Rider",
+    "settlementType": "Cash",
+    "settledAmount": 950,
+    "status": "PaidCash",
+    "notes": "Borrowed insulin vial yesterday, cash paid to rider today",
+    "initiatedBy": "Admin",
+    "transferDate": "2026-10-29",
+    "settledDate": "2026-10-31T06:31:18.836Z",
+    "createdAt": "2026-10-29T11:31:18.836Z",
+    "items": [
+      {
+        "id": "item-3",
+        "medicineId": "INS-7030",
+        "medicineName": "Mixtard 30 HM 100IU",
+        "quantity": 1,
+        "unitPrice": 950,
+        "total": 950
+      }
+    ]
+  },
+  {
+    "id": "TRF-004",
+    "transferNumber": "TRF-2601-004",
+    "transferType": "Internal",
+    "fromBranch": "Main Pharmacy",
+    "toBranch": "Branch 2 (Saddar)",
+    "status": "Received",
+    "notes": "Weekly replenishment batch for branch 2",
+    "initiatedBy": "Admin",
+    "transferDate": "2026-10-28",
+    "receiveDate": "2026-10-29T11:31:18.836Z",
+    "createdAt": "2026-10-28T11:31:18.836Z",
+    "items": [
+      {
+        "id": "item-4",
+        "medicineId": "BRU-400",
+        "medicineName": "Brufen 400mg",
+        "quantity": 10,
+        "unitPrice": 85,
+        "total": 850
+      }
+    ]
+  }
+]

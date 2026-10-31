@@ -7,7 +7,7 @@ export const medicineController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const query: PaginationQuery = {
       page:      Number(req.query.page)  || 1,
-      limit:     Number(req.query.limit) || 20,
+      limit:     Number(req.query.limit) || 10,
       search:    req.query.search   as string | undefined,
       sortBy:    req.query.sortBy   as string | undefined,
       sortOrder: (req.query.sortOrder as "asc" | "desc") || "asc",

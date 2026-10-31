@@ -7,7 +7,7 @@ export const stockCountController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const query: PaginationQuery = {
       page:  Number(req.query.page)  || 1,
-      limit: Number(req.query.limit) || 20,
+      limit: Number(req.query.limit) || 10,
     };
     const result = await StockCountModel.findAll(query);
     res.json({ success: true, data: result } satisfies ApiResponse);

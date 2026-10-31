@@ -19,6 +19,8 @@ import notificationRoutes   from "./routes/notifications";
 import returnRoutes         from "./routes/returns";
 import purchaseOrderRoutes  from "./routes/purchaseOrders";
 import stockCountRoutes     from "./routes/stockCount";
+import cashShiftRoutes      from "./routes/cashShifts";
+import transferRoutes       from "./routes/transfers";
 import { errorHandler }     from "./middleware/errorHandler";
 
 const app = express();
@@ -33,11 +35,23 @@ app.use(express.urlencoded({ extended: true }));
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 app.use(
   "/api/auth",
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "Too many auth attempts" })
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { success: false, message: "Too many login attempts. Please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
 );
 app.use(
   "/api",
-  rateLimit({ windowMs: 60 * 1000, max: 300, message: "Too many requests" })
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 500,
+    message: { success: false, message: "Too many requests, please slow down." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
 );
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -55,6 +69,8 @@ app.use("/api/notifications",  notificationRoutes);
 app.use("/api/returns",        returnRoutes);
 app.use("/api/purchase-orders", purchaseOrderRoutes);
 app.use("/api/stock-counts",   stockCountRoutes);
+app.use("/api/cash-shifts",    cashShiftRoutes);
+app.use("/api/transfers",      transferRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => {

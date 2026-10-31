@@ -20,7 +20,7 @@ export const PurchaseOrderModel = {
     query: PaginationQuery & { status?: POStatus }
   ): Promise<PaginatedResponse> {
     const page  = Math.max(1, query.page  ?? 1);
-    const limit = Math.min(100, query.limit ?? 20);
+    const limit = Math.min(1000, query.limit ?? 10);
     const skip  = (page - 1) * limit;
 
     const where: Prisma.PurchaseOrderWhereInput = {};

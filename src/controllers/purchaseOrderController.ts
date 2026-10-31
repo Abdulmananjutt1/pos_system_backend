@@ -8,7 +8,7 @@ export const purchaseOrderController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const query: PaginationQuery & { status?: POStatus } = {
       page:   Number(req.query.page)  || 1,
-      limit:  Number(req.query.limit) || 20,
+      limit:  Number(req.query.limit) || 10,
       search: req.query.search as string | undefined,
       status: req.query.status as POStatus | undefined,
     };

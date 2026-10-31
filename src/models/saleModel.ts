@@ -5,7 +5,7 @@ import { PaginationQuery, PaginatedResponse, CreateSaleInput } from "../types";
 export const SaleModel = {
   async findAll(query: PaginationQuery & { from?: string; to?: string; status?: SaleStatus }): Promise<PaginatedResponse> {
     const page  = Math.max(1, query.page  ?? 1);
-    const limit = Math.min(100, query.limit ?? 20);
+    const limit = Math.min(1000, query.limit ?? 10);
     const skip  = (page - 1) * limit;
 
     const where: Prisma.SaleWhereInput = {};
