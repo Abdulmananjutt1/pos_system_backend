@@ -20,6 +20,22 @@ router.post(
 // GET /api/auth/me  (protected)
 router.get("/me", authenticate, authController.me);
 
+// GET /api/auth/users  (admin only)
+router.get("/users", authenticate, authorize("admin"), authController.listUsers);
+
+// POST /api/auth/refresh
+router.post("/refresh", authenticate, authController.refresh);
+
+// PATCH /api/auth/users/:id/permissions  (admin only)
+router.patch(
+  "/users/:id/permissions",
+  authenticate,
+  authorize("admin"),
+  [body("permissions").isArray().withMessage("Permissions must be an array")],
+  validate,
+  authController.updatePermissions
+);
+
 // POST /api/auth/register  (admin only)
 router.post(
   "/register",

@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -111,6 +112,8 @@ model User {
   passwordHash String   @map("password_hash")
   role         Role     @default(cashier)
   isActive     Boolean  @default(true) @map("is_active")
+  // JSON array of granted permissions e.g. ["medicines.read","reports.view"]
+  permissions  String[] @default([])
   createdAt    DateTime @default(now()) @map("created_at")
 
   sales         Sale[]
@@ -186,10 +189,16 @@ model Medicine {
   supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
   saleItems          SaleItem[]
+<<<<<<< HEAD
   stockCountItems    StockCountItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        SaleReturnItem[]
   stockTransferItems StockTransferItem[]
+=======
+  purchaseOrderItems PurchaseOrderItem[]
+  stockTransferItems StockTransferItem[]
+  returnItems        SaleReturnItem[]
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
   @@index([name])
   @@index([category])
@@ -247,10 +256,15 @@ model Sale {
   cashierId String @map("cashier_id")
   cashier   User   @relation(fields: [cashierId], references: [id])
 
+<<<<<<< HEAD
   items   SaleItem[]
   returns SaleReturn[]
 
   @@index([createdAt])
+=======
+  items SaleItem[]
+  returns SaleReturn[]
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
   @@index([customerId])
   @@index([invoiceNumber])
   @@map("sales")
@@ -274,6 +288,7 @@ model SaleItem {
   @@map("sale_items")
 }
 
+<<<<<<< HEAD
 model SaleReturn {
   id            String    @id @default(uuid())
   returnNumber  String    @unique @map("return_number")
@@ -285,6 +300,143 @@ model SaleReturn {
   refundMethod  PaymentMethod @default(Cash) @map("refund_method")
   status        String    @default("Approved")
   createdAt     DateTime  @default(now()) @map("created_at")
+=======
+enum POStatus {
+  Draft
+  Sent
+  Confirmed
+  PartiallyReceived
+  Received
+  Cancelled
+}
+
+model PurchaseOrder {
+  id                   String    @id @default(uuid())
+  poNumber             String    @unique @map("po_number")
+  supplierId           String?   @map("supplier_id")
+  supplier             Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierName         String    @default("") @map("supplier_name")
+  poDate               DateTime  @default(now()) @map("po_date") @db.Date
+  expectedDeliveryDate DateTime? @map("expected_delivery_date") @db.Date
+  status               POStatus  @default(Draft)
+  totalAmount          Decimal   @default(0) @db.Decimal(12, 2) @map("total_amount")
+  notes                String?
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  items PurchaseOrderItem[]
+
+  @@index([status])
+  @@index([poDate])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id               String  @id @default(uuid())
+  medicineName     String  @map("medicine_name")
+  quantity         Int     @default(1)
+  unitPrice        Decimal @db.Decimal(10, 2) @map("unit_price")
+  receivedQuantity Int     @default(0) @map("received_quantity")
+  total            Decimal @db.Decimal(12, 2)
+  batchNumber      String? @map("batch_number")
+  expiryDate       DateTime? @map("expiry_date") @db.Date
+
+  purchaseOrderId String        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  medicineId String?   @map("medicine_id")
+  medicine   Medicine? @relation(fields: [medicineId], references: [id], onDelete: SetNull)
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_items")
+}
+
+enum TransferStatus {
+  Pending
+  InTransit
+  Received
+  Rejected
+}
+
+enum TransferType {
+  Internal
+  ExternalOut
+  ExternalIn
+}
+
+model StockTransfer {
+  id               String         @id @default(uuid())
+  transferNumber   String         @unique @map("transfer_number")
+  transferType     TransferType   @default(Internal) @map("transfer_type")
+  fromBranch       String         @map("from_branch")
+  toBranch         String         @map("to_branch")
+  externalPharmacy String?        @map("external_pharmacy")
+  externalPhone    String?        @map("external_phone")
+  transferDate     DateTime       @default(now()) @map("transfer_date") @db.Date
+  receiveDate      DateTime?      @map("receive_date") @db.Date
+  status           TransferStatus @default(Pending)
+  notes            String?
+  initiatedBy      String         @default("") @map("initiated_by")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  items StockTransferItem[]
+
+  @@index([status])
+  @@index([transferDate])
+  @@index([transferType])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id           String @id @default(uuid())
+  medicineName String @map("medicine_name")
+  quantity     Int    @default(1)
+  batchNumber  String? @map("batch_number")
+  expiryDate   DateTime? @map("expiry_date") @db.Date
+
+  transferId String        @map("transfer_id")
+  transfer   StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  medicineId String?   @map("medicine_id")
+  medicine   Medicine? @relation(fields: [medicineId], references: [id], onDelete: SetNull)
+
+  @@index([transferId])
+  @@map("stock_transfer_items")
+}
+
+enum ReturnStatus {
+  Approved
+  Rejected
+  Partial
+}
+
+enum ReturnReason {
+  Defective
+  Expired
+  WrongItem
+  CustomerRequest
+  Other
+}
+
+enum ReturnCondition {
+  Good
+  Opened
+  Damaged
+  Expired
+}
+
+model SaleReturn {
+  id           String       @id @default(uuid())
+  returnNumber String       @unique @map("return_number")
+  invoiceNumber String      @map("invoice_number")
+  returnDate   DateTime     @default(now()) @map("return_date") @db.Date
+  reason       String       @default("")
+  notes        String?
+  refundAmount Decimal      @db.Decimal(12, 2) @map("refund_amount")
+  refundMethod String       @default("Cash") @map("refund_method")
+  status       ReturnStatus @default(Approved)
+  createdAt    DateTime     @default(now()) @map("created_at")
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
   saleId String @map("sale_id")
   sale   Sale   @relation(fields: [saleId], references: [id])
@@ -297,6 +449,7 @@ model SaleReturn {
 }
 
 model SaleReturnItem {
+<<<<<<< HEAD
   id             String          @id @default(uuid())
   medicineName   String          @map("medicine_name")
   saleQuantity   Int             @map("sale_quantity")
@@ -314,6 +467,66 @@ model SaleReturnItem {
   @@map("sale_return_items")
 }
 
+=======
+  id           String          @id @default(uuid())
+  medicineName String          @map("medicine_name")
+  saleQuantity Int             @map("sale_quantity")
+  returnQuantity Int           @map("return_quantity")
+  unitPrice    Decimal         @db.Decimal(10, 2) @map("unit_price")
+  reason       ReturnReason    @default(CustomerRequest)
+  condition    ReturnCondition @default(Good)
+
+  returnId String     @map("return_id")
+  saleReturn SaleReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  medicineId String?   @map("medicine_id")
+  medicine   Medicine? @relation(fields: [medicineId], references: [id], onDelete: SetNull)
+
+  @@index([returnId])
+  @@map("sale_return_items")
+}
+
+enum ShiftStatus {
+  Open
+  Closed
+}
+
+model CashShift {
+  id             String      @id @default(uuid())
+  shiftNumber    String      @unique @map("shift_number")
+  openedBy       String      @map("opened_by")
+  closedBy       String?     @map("closed_by")
+  openTime       DateTime    @default(now()) @map("open_time")
+  closeTime      DateTime?   @map("close_time")
+  openingBalance Decimal     @default(0) @db.Decimal(12, 2) @map("opening_balance")
+  closingBalance Decimal?    @db.Decimal(12, 2) @map("closing_balance")
+  expectedCash   Decimal?    @db.Decimal(12, 2) @map("expected_cash")
+  variance       Decimal?    @db.Decimal(12, 2)
+  status         ShiftStatus @default(Open)
+  notes          String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  entries CashShiftEntry[]
+
+  @@index([status])
+  @@map("cash_shifts")
+}
+
+model CashShiftEntry {
+  id          String   @id @default(uuid())
+  description String
+  amount      Decimal  @db.Decimal(12, 2)
+  type        String   @default("in") // "in" | "out"
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  shiftId String     @map("shift_id")
+  shift   CashShift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([shiftId])
+  @@map("cash_shift_entries")
+}
+
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 model Expense {
   id          String   @id @default(uuid())
   description String
