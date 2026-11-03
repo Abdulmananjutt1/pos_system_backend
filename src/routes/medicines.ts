@@ -2,15 +2,16 @@ import { Router } from "express";
 import { body } from "express-validator";
 import { medicineController } from "../controllers/medicineController";
 import { authenticate, authorize } from "../middleware/auth";
+import { requirePermission } from "../middleware/checkPermission";
 import { validate } from "../middleware/validate";
 
 const router = Router();
 router.use(authenticate);
 
-router.get("/",            medicineController.getAll);
-router.get("/low-stock",   medicineController.getLowStock);
-router.get("/expiring",    medicineController.getExpiring);
-router.get("/:id",         medicineController.getOne);
+router.get("/",            requirePermission('view_medicines'), medicineController.getAll);
+router.get("/low-stock",   requirePermission('view_medicines'), medicineController.getLowStock);
+router.get("/expiring",    requirePermission('view_medicines'), medicineController.getExpiring);
+router.get("/:id",         requirePermission('view_medicines'), medicineController.getOne);
 
 const medicineBody = [
   body("name").notEmpty().withMessage("Name required"),
@@ -19,9 +20,9 @@ const medicineBody = [
   body("expiry_date").isISO8601().withMessage("Valid expiry date required"),
 ];
 
-router.post(   "/",                authorize("admin"), medicineBody, validate, medicineController.create);
-router.put(    "/:id",             authorize("admin"), medicineBody, validate, medicineController.update);
-router.patch(  "/:id/stock",       [body("adjustment").isInt().withMessage("Integer adjustment required")], validate, medicineController.adjustStock);
-router.delete( "/:id",             authorize("admin"), medicineController.remove);
+router.post(   "/",                requirePermission('create_medicine'), medicineBody, validate, medicineController.create);
+router.put(    "/:id",             requirePermission('edit_medicine'), medicineBody, validate, medicineController.update);
+router.patch(  "/:id/stock",       requirePermission('edit_medicine'), [body("adjustment").isInt().withMessage("Integer adjustment required")], validate, medicineController.adjustStock);
+router.delete( "/:id",             requirePermission('delete_medicine'), medicineController.remove);
 
 export default router;

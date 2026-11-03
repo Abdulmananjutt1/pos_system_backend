@@ -117,8 +117,51 @@ model User {
   loginHistory  LoginHistory[]
   stockCounts   StockCount[]
   notifications Notification[]
+  customPermissions UserPermission[]
 
   @@map("users")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  module      String
+  action      String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         Role
+  permissionId String     @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  isGranted    Boolean    @default(true) @map("is_granted")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@unique([role, permissionId])
+  @@index([role])
+  @@map("role_permissions")
+}
+
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String     @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  isGranted    Boolean    @default(true) @map("is_granted")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@map("user_permissions")
 }
 
 model Medicine {
