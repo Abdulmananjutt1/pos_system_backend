@@ -40,15 +40,8 @@ export const authController = {
     const userAgent = req.headers["user-agent"] ?? "unknown";
 
     const user = await UserModel.findByEmail(email);
-<<<<<<< HEAD
-    if (!user) {
-      // Record failed login attempt if user exists (don't reveal if user exists)
-      throw new AppError("Invalid email or password", 401);
-    }
-=======
     if (!user) throw new AppError("Invalid email or password", 401);
     if (!user.isActive) throw new AppError("Account is inactive", 403);
->>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) {
@@ -72,15 +65,10 @@ export const authController = {
       status:    "success",
     }).catch(() => {});
 
-<<<<<<< HEAD
-    const payload: JwtPayload = { id: user.id, email: user.email, role: user.role };
-    const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
-=======
     const token = buildToken(user);
     const permissions = user.role === "admin"
       ? ADMIN_ALL_PERMISSIONS
       : user.permissions.length > 0 ? user.permissions : CASHIER_DEFAULT_PERMISSIONS;
->>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
     res.json({
       success: true,
