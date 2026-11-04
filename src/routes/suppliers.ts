@@ -14,7 +14,12 @@ const supplierBody = [
   body("name").notEmpty().withMessage("Name required"),
   body("phone").notEmpty().withMessage("Phone required"),
   body("address").notEmpty().withMessage("Address required"),
-  body("contact_person").notEmpty().withMessage("Contact person required"),
+  body().custom((_, { req }) => {
+    if (!req.body?.contactPerson && !req.body?.contact_person) {
+      throw new Error("Contact person required");
+    }
+    return true;
+  }),
 ];
 
 router.post(  "/",    authorize("admin"), supplierBody, validate, supplierController.create);

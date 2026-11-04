@@ -7,7 +7,7 @@ export const expenseController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const result = await ExpenseModel.findAll({
       page:  Number(req.query.page)  || 1,
-      limit: Number(req.query.limit) || 20,
+      limit: Number(req.query.limit) || 10,
       from:  req.query.from as string | undefined,
       to:    req.query.to   as string | undefined,
     });

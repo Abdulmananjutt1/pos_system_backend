@@ -51,4 +51,7 @@ router.post(
   authController.register
 );
 
+// GET /api/auth/users  (admin only)
+router.get("/users", authenticate, authorize("admin"), authController.listUsers);
+
 export default router;

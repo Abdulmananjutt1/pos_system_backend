@@ -18,7 +18,7 @@ export const saleController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const result = await SaleModel.findAll({
       page:   Number(req.query.page)  || 1,
-      limit:  Number(req.query.limit) || 20,
+      limit:  Number(req.query.limit) || 10,
       search: req.query.search as string | undefined,
       from:   req.query.from   as string | undefined,
       to:     req.query.to     as string | undefined,

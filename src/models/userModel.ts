@@ -3,7 +3,16 @@ import { Prisma, User } from "@prisma/client";
 
 export const UserModel = {
   findByEmail: (email: string) =>
+<<<<<<< HEAD
+    prisma.user.findFirst({
+      where: {
+        email: { equals: email.trim().toLowerCase(), mode: "insensitive" },
+        isActive: true,
+      },
+    }),
+=======
     prisma.user.findFirst({ where: { email } }),
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
   findById: (id: string) =>
     prisma.user.findUnique({ where: { id } }),

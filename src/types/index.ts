@@ -25,11 +25,19 @@ export interface PaginatedResponse<T = any> {
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
+export type UserRole = "admin" | "cashier";
+
 export interface JwtPayload {
+<<<<<<< HEAD
+  id:    string;
+  email: string;
+  role:  UserRole;
+=======
   id:          string;
   email:       string;
   role:        "admin" | "cashier";
   permissions: string[];
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 }
 
 // ─── Sale creation input ──────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../models/userModel";
+import { LoginHistoryModel } from "../models/loginHistoryModel";
 import { AppError } from "../middleware/errorHandler";
 import { ApiResponse, JwtPayload } from "../types";
 import {
@@ -32,17 +33,54 @@ export const authController = {
   async login(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body as { email: string; password: string };
 
+    // Extract IP and user agent for login history
+    const ipAddress = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim()
+      ?? req.socket.remoteAddress
+      ?? "unknown";
+    const userAgent = req.headers["user-agent"] ?? "unknown";
+
     const user = await UserModel.findByEmail(email);
+<<<<<<< HEAD
+    if (!user) {
+      // Record failed login attempt if user exists (don't reveal if user exists)
+      throw new AppError("Invalid email or password", 401);
+    }
+=======
     if (!user) throw new AppError("Invalid email or password", 401);
     if (!user.isActive) throw new AppError("Account is inactive", 403);
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
     const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) throw new AppError("Invalid email or password", 401);
+    if (!match) {
+      // Record failed login
+      await LoginHistoryModel.create({
+        userId:    user.id,
+        action:    "Login",
+        ipAddress,
+        userAgent,
+        status:    "failed",
+      }).catch(() => {}); // Don't fail request if history write fails
+      throw new AppError("Invalid email or password", 401);
+    }
 
+    // Record successful login
+    await LoginHistoryModel.create({
+      userId:    user.id,
+      action:    "Login",
+      ipAddress,
+      userAgent,
+      status:    "success",
+    }).catch(() => {});
+
+<<<<<<< HEAD
+    const payload: JwtPayload = { id: user.id, email: user.email, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
+=======
     const token = buildToken(user);
     const permissions = user.role === "admin"
       ? ADMIN_ALL_PERMISSIONS
       : user.permissions.length > 0 ? user.permissions : CASHIER_DEFAULT_PERMISSIONS;
+>>>>>>> b33efb41bced3b18c8e308854a04d36cce607b81
 
     res.json({
       success: true,

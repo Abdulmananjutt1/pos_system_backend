@@ -6,7 +6,7 @@ import { ApiResponse } from "../types";
 export const customerController = {
   async getAll(req: Request, res: Response): Promise<void> {
     const result = await CustomerModel.findAll({
-      page: Number(req.query.page) || 1, limit: Number(req.query.limit) || 20,
+      page: Number(req.query.page) || 1, limit: Number(req.query.limit) || 10,
       search: req.query.search as string | undefined,
     });
     res.json({ success: true, data: result } satisfies ApiResponse);
