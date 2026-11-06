@@ -8,10 +8,11 @@ import { PERMISSIONS } from "../config/permissions";
 const router = Router();
 router.use(authenticate);
 
-router.get("/",          requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getAll);
-router.get("/low-stock", requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getLowStock);
-router.get("/expiring",  requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getExpiring);
-router.get("/:id",       requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getOne);
+router.get("/",             requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getAll);
+router.get("/low-stock",    requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getLowStock);
+router.get("/expiring",     requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getExpiring);
+router.get("/barcode/:code",requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getByBarcode);
+router.get("/:id",          requirePermission(PERMISSIONS.MEDICINES_READ),  medicineController.getOne);
 
 const medicineBody = [
   body("name").notEmpty().withMessage("Medicine name is required"),

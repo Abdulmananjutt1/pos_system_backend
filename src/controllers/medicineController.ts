@@ -22,6 +22,14 @@ export const medicineController = {
     res.json({ success: true, data: medicine } satisfies ApiResponse);
   },
 
+  // GET /api/medicines/barcode/:code  — fast scanner lookup
+  async getByBarcode(req: Request, res: Response): Promise<void> {
+    const code = req.params.code.trim();
+    const medicine = await MedicineModel.findByBarcode(code);
+    if (!medicine) throw new AppError(`No medicine found for barcode: ${code}`, 404);
+    res.json({ success: true, data: medicine } satisfies ApiResponse);
+  },
+
   async getLowStock(req: Request, res: Response): Promise<void> {
     const threshold = Number(req.query.threshold) || 10;
     const items = await MedicineModel.findLowStock(threshold);

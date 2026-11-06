@@ -183,6 +183,7 @@ model Medicine {
   genericName          String           @default("") @map("generic_name")
   brand                String           @default("")
   category             MedicineCategory @default(Other)
+  barcode              String?          @unique
   batchNumber          String           @default("") @map("batch_number")
   expiryDate           DateTime         @map("expiry_date")
   purchasePrice        Decimal          @default(0) @db.Decimal(10, 2) @map("purchase_price")
@@ -496,6 +497,21 @@ model StockTransferItem {
   @@index([transferId])
   @@index([medicineId])
   @@map("stock_transfer_items")
+}
+
+model HeldSale {
+  id           String   @id @default(uuid())
+  label        String
+  customerId   String?  @map("customer_id")
+  customerName String   @default("Walk-in") @map("customer_name")
+  discount     Decimal  @default(0) @db.Decimal(12, 2)
+  items        Json     // Array of SaleItem stored as JSON
+  heldAt       DateTime @default(now()) @map("held_at")
+  createdBy    String   @map("created_by") // cashier user id
+
+  @@index([heldAt])
+  @@index([createdBy])
+  @@map("held_sales")
 }
 
 model LoginHistory {

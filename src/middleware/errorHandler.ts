@@ -18,7 +18,12 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  console.error(`[Error] ${err.name}: ${err.message}`);
+  if (err instanceof AppError) {
+    console.error(`[AppError] ${err.statusCode} ${err.message}`);
+  } else {
+    console.error(`[UnhandledError] ${err.name}: ${err.message}`);
+    console.error(err.stack);
+  }
 
   const statusCode = err instanceof AppError ? err.statusCode : 500;
   const message    = err instanceof AppError ? err.message : "Internal server error";

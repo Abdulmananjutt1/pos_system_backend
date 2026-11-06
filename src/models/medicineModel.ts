@@ -14,6 +14,8 @@ export const MedicineModel = {
             { name:        { contains: query.search, mode: "insensitive" } },
             { genericName: { contains: query.search, mode: "insensitive" } },
             { brand:       { contains: query.search, mode: "insensitive" } },
+            { barcode:     { contains: query.search, mode: "insensitive" } },
+            { batchNumber: { contains: query.search, mode: "insensitive" } },
           ],
         }
       : {};
@@ -32,6 +34,10 @@ export const MedicineModel = {
 
   findById: (id: string) =>
     prisma.medicine.findUnique({ where: { id }, include: { supplier: { select: { id: true, name: true } } } }),
+
+  // Exact barcode lookup — used by scanner
+  findByBarcode: (barcode: string) =>
+    prisma.medicine.findUnique({ where: { barcode }, include: { supplier: { select: { id: true, name: true } } } }),
 
   findLowStock: (threshold: number) =>
     prisma.medicine.findMany({

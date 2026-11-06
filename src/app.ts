@@ -23,6 +23,7 @@ import cashShiftRoutes      from "./routes/cashShifts";
 import transferRoutes       from "./routes/transfers";
 import stockTransferRoutes  from "./routes/stockTransfers";
 import permissionRoutes     from "./routes/permissions";
+import heldSaleRoutes       from "./routes/heldSales";
 import { errorHandler }     from "./middleware/errorHandler";
 
 const app = express();
@@ -75,6 +76,7 @@ app.use("/api/cash-shifts",     cashShiftRoutes);
 app.use("/api/transfers",       transferRoutes);
 app.use("/api/stock-transfers", stockTransferRoutes);
 app.use("/api/permissions",     permissionRoutes);
+app.use("/api/held-sales",      heldSaleRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => {
