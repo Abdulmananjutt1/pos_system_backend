@@ -29,6 +29,7 @@ export type UserRole = "admin" | "cashier";
 
 export interface JwtPayload {
   id:          string;
+  name:        string;
   email:       string;
   role:        UserRole;
   permissions: string[];

@@ -7,6 +7,9 @@ export const reportController = {
   async getSummary(req: Request, res: Response): Promise<void> {
     const { from, to } = req.query as { from?: string; to?: string };
 
+    const isAdmin   = req.user!.role === "admin";
+    const cashierId = isAdmin ? undefined : req.user!.id;
+
     const dateFilter: Prisma.SaleWhereInput = from || to
       ? {
           createdAt: {
@@ -15,6 +18,13 @@ export const reportController = {
           },
         }
       : {};
+
+    // Cashier sees only their own sales data
+    const saleBase: Prisma.SaleWhereInput = {
+      status: "Completed",
+      ...dateFilter,
+      ...(cashierId && { cashierId }),
+    };
 
     const returnDateFilter: Prisma.SaleReturnWhereInput = from || to
       ? {
@@ -35,21 +45,21 @@ export const reportController = {
       recentSales,
     ] = await Promise.all([
       prisma.sale.aggregate({
-        where:  { status: "Completed", ...dateFilter },
+        where:  saleBase,
         _count: { id: true },
         _sum:   { total: true, discount: true },
       }),
 
       prisma.sale.groupBy({
         by:     ["paymentMethod"],
-        where:  { status: "Completed", ...dateFilter },
+        where:  saleBase,
         _count: { id: true },
         _sum:   { total: true },
       }),
 
       prisma.saleItem.groupBy({
         by:      ["medicineId", "medicineName"],
-        where:   { sale: { status: "Completed", ...dateFilter } },
+        where:   { sale: saleBase },
         _sum:    { total: true, quantity: true },
         orderBy: { _sum: { total: "desc" } },
         take:    10,
@@ -66,7 +76,7 @@ export const reportController = {
       }),
 
       prisma.sale.findMany({
-        where:   { ...dateFilter },
+        where:   { ...dateFilter, ...(cashierId && { cashierId }) },
         orderBy: { createdAt: "desc" },
         take:    50,
         include: { items: true },

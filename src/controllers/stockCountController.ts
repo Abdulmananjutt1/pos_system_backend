@@ -5,10 +5,14 @@ import { ApiResponse, PaginationQuery } from "../types";
 
 export const stockCountController = {
   async getAll(req: Request, res: Response): Promise<void> {
-    const query: PaginationQuery = {
+    const query: PaginationQuery & { userId?: string } = {
       page:  Number(req.query.page)  || 1,
       limit: Number(req.query.limit) || 10,
     };
+    // Cashier sees only their own stock counts
+    if (req.user!.role !== "admin") {
+      query.userId = req.user!.id;
+    }
     const result = await StockCountModel.findAll(query);
     res.json({ success: true, data: result } satisfies ApiResponse);
   },

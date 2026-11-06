@@ -10,7 +10,7 @@ import {
   CASHIER_DEFAULT_PERMISSIONS,
 } from "../config/permissions";
 
-function buildToken(user: { id: string; email: string; role: string; permissions: string[] }): string {
+function buildToken(user: { id: string; name: string; email: string; role: string; permissions: string[] }): string {
   const permissions = user.role === "admin"
     ? ADMIN_ALL_PERMISSIONS
     : user.permissions.length > 0
@@ -19,6 +19,7 @@ function buildToken(user: { id: string; email: string; role: string; permissions
 
   const payload: JwtPayload = {
     id:          user.id,
+    name:        user.name,
     email:       user.email,
     role:        user.role as "admin" | "cashier",
     permissions: permissions as string[],
@@ -118,6 +119,52 @@ export const authController = {
   async listUsers(_req: Request, res: Response): Promise<void> {
     const users = await UserModel.findAll();
     res.json({ success: true, data: users } satisfies ApiResponse);
+  },
+
+  // Update user (name, email, role, isActive) — admin only
+  async updateUser(req: Request, res: Response): Promise<void> {
+    const { name, email, password, role, isActive } = req.body as {
+      name?: string; email?: string; password?: string;
+      role?: "admin" | "cashier"; isActive?: boolean;
+    };
+    const user = await UserModel.findById(req.params.id);
+    if (!user) throw new AppError("User not found", 404);
+
+    // Don't let admin accidentally lock themselves out
+    if (req.params.id === req.user!.id && isActive === false) {
+      throw new AppError("You cannot deactivate your own account", 400);
+    }
+
+    // If email is changing, make sure it's unique
+    if (email && email !== user.email) {
+      const existing = await UserModel.findByEmail(email);
+      if (existing && existing.id !== req.params.id) {
+        throw new AppError("Email already in use", 409);
+      }
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (name !== undefined)     updateData.name     = name;
+    if (email !== undefined)    updateData.email    = email;
+    if (role !== undefined)     updateData.role     = role;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (password) updateData.passwordHash = await bcrypt.hash(password, 12);
+
+    const updated = await UserModel.update(req.params.id, updateData);
+    const { passwordHash: _, ...safe } = updated;
+    res.json({ success: true, message: "User updated", data: safe } satisfies ApiResponse);
+  },
+
+  // Delete user (admin only) — cannot delete self
+  async deleteUser(req: Request, res: Response): Promise<void> {
+    if (req.params.id === req.user!.id) {
+      throw new AppError("You cannot delete your own account", 400);
+    }
+    const user = await UserModel.findById(req.params.id);
+    if (!user) throw new AppError("User not found", 404);
+
+    await UserModel.deactivate(req.params.id);
+    res.json({ success: true, message: "User deactivated successfully" } satisfies ApiResponse);
   },
 
   // Update user permissions (admin only)

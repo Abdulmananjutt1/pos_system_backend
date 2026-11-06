@@ -4,24 +4,32 @@ import { AppError } from "../middleware/errorHandler";
 import { ApiResponse } from "../types";
 
 export const cashShiftController = {
-  async getCurrent(_req: Request, res: Response): Promise<void> {
-    const shift = await CashShiftModel.findOpen();
+  async getCurrent(req: Request, res: Response): Promise<void> {
+    // Cashier sees only their own open shift
+    const openedBy = req.user!.role === "admin" ? undefined : req.user!.email;
+    const shift = await CashShiftModel.findOpen(openedBy);
     res.json({ success: true, data: shift ?? null } satisfies ApiResponse);
   },
 
-  async getAll(_req: Request, res: Response): Promise<void> {
-    const shifts = await CashShiftModel.findAll();
+  async getAll(req: Request, res: Response): Promise<void> {
+    // Admin sees all shifts; cashier sees only their own (matched by email)
+    const openedBy = req.user!.role === "admin" ? undefined : req.user!.email;
+    const shifts = await CashShiftModel.findAll(openedBy);
     res.json({ success: true, data: shifts } satisfies ApiResponse);
   },
 
   async open(req: Request, res: Response): Promise<void> {
-    const existing = await CashShiftModel.findOpen();
-    if (existing) throw new AppError("A shift is already open", 400);
+    // Check if current user already has an open shift
+    const openedBy  = req.user!.email;
+    const existing  = await CashShiftModel.findOpen(openedBy);
+    if (existing) throw new AppError("You already have an open shift", 400);
 
     const { openingBalance } = req.body as { openingBalance: number };
     if (openingBalance < 0) throw new AppError("Opening balance cannot be negative", 422);
 
-    const shift = await CashShiftModel.open(req.user!.email, openingBalance);
+    // Store cashier's real name for display
+    const displayName = req.user!.name ?? req.user!.email;
+    const shift = await CashShiftModel.open(openedBy, openingBalance, displayName);
     res.status(201).json({ success: true, message: "Shift opened", data: shift } satisfies ApiResponse);
   },
 
@@ -33,7 +41,15 @@ export const cashShiftController = {
     if (!shift) throw new AppError("Shift not found", 404);
     if (shift.status === "Closed") throw new AppError("Shift already closed", 400);
 
-    const closed = await CashShiftModel.close(req.params.id, req.user!.email, closingBalance, notes);
+    // Cashier can only close their own shift (check email suffix in openedBy)
+    if (req.user!.role !== "admin") {
+      const email = req.user!.email;
+      const owns  = shift.openedBy === email || shift.openedBy.endsWith(`|${email}`);
+      if (!owns) throw new AppError("You can only close your own shift", 403);
+    }
+
+    const closedByName = req.user!.name ?? req.user!.email;
+    const closed = await CashShiftModel.close(req.params.id, closedByName, closingBalance, notes);
     res.json({ success: true, message: "Shift closed", data: closed } satisfies ApiResponse);
   },
 
@@ -46,6 +62,13 @@ export const cashShiftController = {
     const shift = await CashShiftModel.findById(req.params.id);
     if (!shift) throw new AppError("Shift not found", 404);
     if (shift.status === "Closed") throw new AppError("Cannot add entry to closed shift", 400);
+
+    // Cashier can only add entries to their own shift
+    if (req.user!.role !== "admin") {
+      const email = req.user!.email;
+      const owns  = shift.openedBy === email || shift.openedBy.endsWith(`|${email}`);
+      if (!owns) throw new AppError("You can only add entries to your own shift", 403);
+    }
 
     const entry = await CashShiftModel.addEntry(req.params.id, description, amount, type);
     res.status(201).json({ success: true, message: "Entry added", data: entry } satisfies ApiResponse);

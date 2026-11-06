@@ -4,7 +4,7 @@ import { PaginationQuery, PaginatedResponse } from "../types";
 
 export const StockCountModel = {
   async findAll(
-    query: PaginationQuery & { status?: StockCountStatus }
+    query: PaginationQuery & { status?: StockCountStatus; userId?: string }
   ): Promise<PaginatedResponse> {
     const page  = Math.max(1, query.page  ?? 1);
     const limit = Math.min(1000, query.limit ?? 10);
@@ -12,6 +12,7 @@ export const StockCountModel = {
 
     const where: Prisma.StockCountWhereInput = {};
     if (query.status) where.status = query.status;
+    if (query.userId) where.userId = query.userId;  // cashier isolation
 
     const [items, total] = await prisma.$transaction([
       prisma.stockCount.findMany({

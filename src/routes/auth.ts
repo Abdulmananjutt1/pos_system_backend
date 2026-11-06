@@ -26,16 +26,6 @@ router.get("/users", authenticate, authorize("admin"), authController.listUsers)
 // POST /api/auth/refresh
 router.post("/refresh", authenticate, authController.refresh);
 
-// PATCH /api/auth/users/:id/permissions  (admin only)
-router.patch(
-  "/users/:id/permissions",
-  authenticate,
-  authorize("admin"),
-  [body("permissions").isArray().withMessage("Permissions must be an array")],
-  validate,
-  authController.updatePermissions
-);
-
 // POST /api/auth/register  (admin only)
 router.post(
   "/register",
@@ -51,7 +41,32 @@ router.post(
   authController.register
 );
 
-// GET /api/auth/users  (admin only)
-router.get("/users", authenticate, authorize("admin"), authController.listUsers);
+// PUT /api/auth/users/:id  (admin only)
+router.put(
+  "/users/:id",
+  authenticate,
+  authorize("admin"),
+  [
+    body("name").optional().notEmpty().withMessage("Name cannot be empty"),
+    body("email").optional().isEmail().withMessage("Valid email required"),
+    body("password").optional().isLength({ min: 6 }).withMessage("Password min 6 chars"),
+    body("role").optional().isIn(["admin", "cashier"]).withMessage("Role must be admin or cashier"),
+  ],
+  validate,
+  authController.updateUser
+);
+
+// DELETE /api/auth/users/:id  (admin only — deactivates user)
+router.delete("/users/:id", authenticate, authorize("admin"), authController.deleteUser);
+
+// PATCH /api/auth/users/:id/permissions  (admin only)
+router.patch(
+  "/users/:id/permissions",
+  authenticate,
+  authorize("admin"),
+  [body("permissions").isArray().withMessage("Permissions must be an array")],
+  validate,
+  authController.updatePermissions
+);
 
 export default router;

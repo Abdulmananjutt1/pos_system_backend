@@ -3,12 +3,15 @@ import { Prisma, PaymentMethod, SaleStatus } from "@prisma/client";
 import { PaginationQuery, PaginatedResponse, CreateSaleInput } from "../types";
 
 export const SaleModel = {
-  async findAll(query: PaginationQuery & { from?: string; to?: string; status?: SaleStatus }): Promise<PaginatedResponse> {
+  async findAll(query: PaginationQuery & { from?: string; to?: string; status?: SaleStatus; cashierId?: string }): Promise<PaginatedResponse> {
     const page  = Math.max(1, query.page  ?? 1);
     const limit = Math.min(1000, query.limit ?? 10);
     const skip  = (page - 1) * limit;
 
     const where: Prisma.SaleWhereInput = {};
+    // Per-cashier isolation
+    if (query.cashierId) where.cashierId = query.cashierId;
+
     if (query.from || query.to) {
       where.createdAt = {
         ...(query.from && { gte: new Date(query.from) }),
@@ -96,12 +99,18 @@ export const SaleModel = {
   refund: (id: string) =>
     prisma.sale.update({ where: { id }, data: { status: "Refunded" } }),
 
-  async todayStats(): Promise<{ count: number; revenue: number }> {
+  async todayStats(cashierId?: string): Promise<{ count: number; revenue: number }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const where: Prisma.SaleWhereInput = {
+      status:    "Completed",
+      createdAt: { gte: today },
+      ...(cashierId && { cashierId }),
+    };
+
     const result = await prisma.sale.aggregate({
-      where:  { status: "Completed", createdAt: { gte: today } },
+      where,
       _count: { id: true },
       _sum:   { total: true },
     });

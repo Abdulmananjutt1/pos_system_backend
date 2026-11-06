@@ -31,9 +31,13 @@ export const dashboardController = {
     const range  = (req.query.range as string) ?? "today";
     const { from, to } = getDateBounds(range);
 
+    const isAdmin   = req.user!.role === "admin";
+    const cashierId = isAdmin ? undefined : req.user!.id;
+
     const salesFilter: Prisma.SaleWhereInput = {
       status:    "Completed",
       createdAt: { gte: from, lte: to },
+      ...(cashierId && { cashierId }),   // ← cashier sees only their sales
     };
     const expenseFilter: Prisma.ExpenseWhereInput = {
       date: { gte: from, lte: to },
@@ -213,13 +217,13 @@ export const dashboardController = {
           itemCount:     s.items.length,
           createdAt:     s.createdAt,
         })),
-        trend: await buildTrend(range),
+        trend: await buildTrend(range, cashierId),
       },
     } satisfies ApiResponse);
   },
 };
 
-async function buildTrend(range: string) {
+async function buildTrend(range: string, cashierId?: string) {
   const days = range === "30d" ? 30 : range === "7d" ? 7 : 1;
   const now  = new Date();
 
@@ -228,8 +232,12 @@ async function buildTrend(range: string) {
   from.setHours(0, 0, 0, 0);
 
   const sales = await prisma.sale.findMany({
-    where:   { status: "Completed", createdAt: { gte: from, lte: now } },
-    select:  { total: true, createdAt: true },
+    where: {
+      status:    "Completed",
+      createdAt: { gte: from, lte: now },
+      ...(cashierId && { cashierId }),  // cashier isolation
+    },
+    select: { total: true, createdAt: true },
   });
 
   const result = [];
